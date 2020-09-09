@@ -1,0 +1,20 @@
+sudo: required
+services:
+  -docker
+
+before_install:
+  - docker build -t seanyting/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run seanyting/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t seanyting/multi-client ./client
+  - docker build -t seanyting/multi-nginx ./nginx
+  - docker build -t seanyting/multi-server ./server
+  - docker build -t seanyting/multi-worker ./worker
+  - echo "$docker_password" | docker login -u "$docker_id" --password-stdin
+  - docker push seanyting/multi-client
+  - docker push seanyting/multi-nginx
+  - docker push seanyting/multi-server
+  - docker push seanyting/multi-worker
